@@ -152,12 +152,7 @@
                     <p class="text-xs text-white/40">Powered by FLUX Image Generation</p>
                 </div>
             </div>
-            <button onclick="showGallery()" class="text-sm text-white/50 hover:text-white/80 transition flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                History
-            </button>
+            <span class="text-xs text-white/30">Capstone Project CS[03]</span>
         </div>
     </header>
 
@@ -284,46 +279,43 @@
                 </div>
             </div>
 
-            <!-- Right Panel: Results -->
+            <!-- Right Panel -->
             <div class="lg:col-span-3">
 
-                <!-- Status Panel (hidden by default) -->
-                <div id="statusPanel" class="hidden mb-8 fade-in">
-                    <div class="glass rounded-2xl p-6 generating">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="spinner"></div>
-                                <span class="text-sm font-medium" id="statusText">Initializing...</span>
+                <!-- Generation Panel (hidden by default, shown during/after generation) -->
+                <div id="generationPanel" class="hidden">
+
+                    <!-- Status/Progress -->
+                    <div id="statusPanel" class="hidden mb-8 fade-in">
+                        <div class="glass rounded-2xl p-6 generating">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="spinner"></div>
+                                    <span class="text-sm font-medium" id="statusText">Initializing...</span>
+                                </div>
+                                <span class="text-xs text-white/40" id="progressText">0 / 0</span>
                             </div>
-                            <span class="text-xs text-white/40" id="progressText">0 / 3</span>
+                            <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div class="progress-fill h-full rounded-full transition-all duration-700" id="progressBar" style="width: 0%"></div>
+                            </div>
                         </div>
-                        <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div class="progress-fill h-full rounded-full transition-all duration-700" id="progressBar" style="width: 0%"></div>
-                        </div>
+                    </div>
+
+                    <!-- Results Grid -->
+                    <div id="resultsGrid" class="space-y-6"></div>
+
+                    <!-- Back to history link -->
+                    <div class="mt-6 text-center">
+                        <button onclick="showHistory()" class="text-xs text-white/30 hover:text-white/60 transition">Back to history</button>
                     </div>
                 </div>
 
-                <!-- Results Grid -->
-                <div id="resultsGrid" class="space-y-6">
-                    <!-- Empty state -->
-                    <div id="emptyState" class="text-center py-24">
-                        <div class="w-20 h-20 mx-auto mb-5 rounded-2xl bg-white/5 flex items-center justify-center">
-                            <svg class="w-10 h-10 text-white/15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                        </div>
-                        <h3 class="text-lg font-semibold text-white/30">No ads generated yet</h3>
-                        <p class="text-sm text-white/20 mt-1">Fill in the form and hit generate to create your ad variants</p>
+                <!-- History Section (shown by default) -->
+                <div id="historySection">
+                    <h2 class="text-lg font-semibold mb-6">History</h2>
+                    <div id="historyGrid" class="space-y-8">
+                        <p class="text-sm text-white/30 text-center py-12">Loading...</p>
                     </div>
-                </div>
-
-                <!-- History Section (hidden) -->
-                <div id="gallerySection" class="hidden">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-lg font-semibold">History</h2>
-                        <button onclick="hideGallery()" class="text-sm text-white/40 hover:text-white/70 transition">Back to current</button>
-                    </div>
-                    <div id="galleryGrid" class="space-y-8"></div>
                 </div>
 
             </div>
@@ -333,71 +325,55 @@
     <script>
         let pollInterval = null;
 
-        // Format preview thumbnail
-        function updateFormatPreview() {
-            const sel = document.getElementById('formatSelect');
-            const opt = sel.options[sel.selectedIndex];
-            const aspect = opt.dataset.aspect;
-            const size = opt.dataset.size;
-            const [w, h] = size.split('x').map(Number);
-
-            document.getElementById('formatInfo').innerHTML = `${w} &times; ${h} px`;
-
-            // Scale thumb to show aspect ratio (max 28px on longer side)
-            const thumb = document.getElementById('formatThumb');
-            const maxPx = 28;
-            const ratio = w / h;
-            if (ratio >= 1) {
-                thumb.style.width = maxPx + 'px';
-                thumb.style.height = Math.round(maxPx / ratio) + 'px';
-            } else {
-                thumb.style.height = maxPx + 'px';
-                thumb.style.width = Math.round(maxPx * ratio) + 'px';
-            }
+        // --- Panel switching ---
+        function showGenerationPanel() {
+            document.getElementById('historySection').classList.add('hidden');
+            document.getElementById('generationPanel').classList.remove('hidden');
         }
 
-        // Update total images count
+        function showHistory() {
+            document.getElementById('generationPanel').classList.add('hidden');
+            document.getElementById('historySection').classList.remove('hidden');
+            loadHistory();
+        }
+
+        // --- Format preview ---
+        function updateFormatPreview() {
+            const opt = document.getElementById('formatSelect').selectedOptions[0];
+            const [w, h] = opt.dataset.size.split('x').map(Number);
+            document.getElementById('formatInfo').innerHTML = `${w} &times; ${h} px`;
+            const thumb = document.getElementById('formatThumb');
+            const maxPx = 28, ratio = w / h;
+            if (ratio >= 1) { thumb.style.width = maxPx+'px'; thumb.style.height = Math.round(maxPx/ratio)+'px'; }
+            else { thumb.style.height = maxPx+'px'; thumb.style.width = Math.round(maxPx*ratio)+'px'; }
+        }
+
         function updateTotalImages() {
             const n = parseInt(document.getElementById('numImagesRange').value);
-            const variantCount = document.querySelectorAll('input[name="variants"]:checked').length;
+            const v = document.querySelectorAll('input[name="variants"]:checked').length;
             document.getElementById('perVariant').textContent = n;
-            document.getElementById('totalImages').textContent = n * variantCount;
-            document.getElementById('variantCount').textContent = variantCount;
+            document.getElementById('totalImages').textContent = n * v;
+            document.getElementById('variantCount').textContent = v;
         }
 
         document.getElementById('numImagesRange').addEventListener('input', updateTotalImages);
 
-        // Init on load
-        updateFormatPreview();
-
+        // --- Generate ---
         async function handleSubmit(e) {
             e.preventDefault();
-
-            const form = e.target;
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-
-            // Collect selected variants as array
-            const selectedVariants = [...document.querySelectorAll('input[name="variants"]:checked')]
-                .map(cb => cb.value);
-            if (selectedVariants.length === 0) {
-                alert('Please select at least one variant.');
-                return;
-            }
+            const data = Object.fromEntries(new FormData(e.target).entries());
+            const selectedVariants = [...document.querySelectorAll('input[name="variants"]:checked')].map(cb => cb.value);
+            if (!selectedVariants.length) { alert('Select at least one variant.'); return; }
             data.variants = selectedVariants;
 
-            // Disable button
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerHTML = '<div class="spinner"></div> Starting...';
+            btn.innerHTML = '<div class="spinner"></div> Generating...';
 
-            // Show status, hide empty state
+            // Switch to generation panel
+            showGenerationPanel();
             document.getElementById('statusPanel').classList.remove('hidden');
-            document.getElementById('emptyState').classList.add('hidden');
-
-            // Clear previous results
-            const resultsGrid = document.getElementById('resultsGrid');
-            resultsGrid.querySelectorAll('.result-card').forEach(el => el.remove());
+            document.getElementById('resultsGrid').innerHTML = '';
 
             try {
                 const res = await fetch('/api/generate', {
@@ -405,164 +381,94 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data),
                 });
-
                 const result = await res.json();
-
-                if (!res.ok) {
-                    throw new Error(result.error || 'Generation failed');
-                }
-
-                // Start polling
+                if (!res.ok) throw new Error(result.error || 'Failed');
                 startPolling();
-
             } catch (err) {
                 alert(err.message);
-                btn.disabled = false;
-                btn.innerHTML = `
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                    </svg>
-                    Generate Advertisements`;
-                document.getElementById('statusPanel').classList.add('hidden');
+                resetBtn();
+                showHistory();
             }
+        }
+
+        function resetBtn() {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = false;
+            btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg> Generate Advertisements`;
         }
 
         function startPolling() {
             pollInterval = setInterval(async () => {
                 try {
                     const res = await fetch('/api/status');
-                    const status = await res.json();
-
-                    updateStatus(status);
-
-                    if (!status.running) {
-                        clearInterval(pollInterval);
-                        onComplete(status);
-                    }
-                } catch (err) {
-                    console.error('Polling error:', err);
-                }
+                    const s = await res.json();
+                    updateStatus(s);
+                    if (!s.running) { clearInterval(pollInterval); onComplete(s); }
+                } catch (err) { console.error(err); }
             }, 2000);
         }
 
-        function updateStatus(status) {
-            const statusText = document.getElementById('statusText');
-            const progressText = document.getElementById('progressText');
-            const progressBar = document.getElementById('progressBar');
+        function updateStatus(s) {
+            document.getElementById('statusText').textContent = s.running ? `Generating: ${s.current_variant}...` : s.error ? `Error: ${s.error}` : 'Done!';
+            document.getElementById('progressText').textContent = `${s.progress} / ${s.total}`;
+            document.getElementById('progressBar').style.width = `${(s.progress / s.total) * 100}%`;
 
-            if (status.running) {
-                statusText.textContent = `Generating: ${status.current_variant}...`;
-            } else if (status.error) {
-                statusText.textContent = `Error: ${status.error}`;
-            } else {
-                statusText.textContent = 'Complete!';
-            }
-
-            progressText.textContent = `${status.progress} / ${status.total}`;
-            progressBar.style.width = `${(status.progress / status.total) * 100}%`;
-
-            // Add result cards as they come in
-            const resultsGrid = document.getElementById('resultsGrid');
-            const existingCards = resultsGrid.querySelectorAll('.result-card').length;
-
-            for (let i = existingCards; i < status.results.length; i++) {
-                addResultCard(status.results[i], i + 1);
-            }
+            const existing = document.querySelectorAll('#resultsGrid .result-card').length;
+            for (let i = existing; i < s.results.length; i++) addResultCard(s.results[i], i + 1);
         }
 
-        function onComplete(status) {
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = false;
-            btn.innerHTML = `
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
-                Generate Advertisements`;
-
-            // Hide status after a delay
+        function onComplete(s) {
+            resetBtn();
             setTimeout(() => {
-                const panel = document.getElementById('statusPanel');
-                panel.classList.add('hidden');
-                panel.querySelector('.glass').classList.remove('generating');
+                document.getElementById('statusPanel').classList.add('hidden');
             }, 2000);
-
-            if (status.error) {
-                alert('Generation failed: ' + status.error);
-            }
+            if (s.error) alert('Error: ' + s.error);
         }
 
         function addResultCard(result, index) {
             const grid = document.getElementById('resultsGrid');
-
             const card = document.createElement('div');
             card.className = 'result-card image-card glass-card rounded-2xl overflow-hidden fade-in';
-
-            const variantLabels = ['Studio Luxury', 'Lifestyle', 'Creative Concept'];
-            const variantLabel = result.metadata?.variant_name || variantLabels[index - 1] || `Variant ${index}`;
-
+            const name = result.metadata?.variant_name || `Variant ${index}`;
             const dims = result.metadata?.dimensions || '';
-            const msgStyle = result.metadata?.messaging || '';
-            const fmtId = result.metadata?.format || '';
 
             card.innerHTML = `
                 <div class="relative">
-                    <img src="/outputs/${result.png}" alt="${variantLabel}"
-                        class="w-full object-cover"
-                        loading="lazy">
-                    <div class="absolute top-3 left-3 flex gap-2">
-                        <span class="variant-badge text-xs font-medium text-white/80 px-3 py-1 rounded-lg backdrop-blur-sm">
-                            ${variantLabel}
-                        </span>
+                    <img src="/outputs/${result.png}" alt="${name}" class="w-full object-cover" loading="lazy">
+                    <div class="absolute top-3 left-3">
+                        <span class="variant-badge text-xs font-medium text-white/80 px-3 py-1 rounded-lg backdrop-blur-sm">${name}</span>
                     </div>
                     <div class="absolute top-3 right-3">
-                        <span class="text-xs text-white/60 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-md">
-                            ${dims}
-                        </span>
+                        <span class="text-xs text-white/60 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-md">${dims}</span>
                     </div>
                 </div>
                 <div class="p-5">
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-semibold text-sm">${variantLabel}</h3>
-                        <span class="text-xs text-white/30">Seed: ${result.metadata?.seed || 'N/A'}</span>
-                    </div>
-                    <div class="flex gap-2 mb-3">
-                        ${fmtId ? `<span class="text-[10px] text-white/40 bg-white/5 px-2 py-0.5 rounded-md">${fmtId.replace(/_/g, ' ')}</span>` : ''}
-                        ${msgStyle ? `<span class="text-[10px] text-white/40 bg-white/5 px-2 py-0.5 rounded-md">${msgStyle}</span>` : ''}
+                        <h3 class="font-semibold text-sm">${name}</h3>
+                        <span class="text-xs text-white/30">Seed: ${result.metadata?.seed || ''}</span>
                     </div>
                     <p class="text-xs text-white/40 leading-relaxed line-clamp-2 mb-4">${result.metadata?.prompt || ''}</p>
                     <div class="flex gap-2">
-                        <a href="/outputs/${result.png}" download
-                            class="flex-1 text-center text-xs font-medium py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">
-                            PNG
-                        </a>
-                        <a href="/outputs/${result.jpg}" download
-                            class="flex-1 text-center text-xs font-medium py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">
-                            JPG
-                        </a>
-                        <a href="/outputs/${result.webp}" download
-                            class="flex-1 text-center text-xs font-medium py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">
-                            WebP
-                        </a>
+                        <a href="/outputs/${result.png}" download class="flex-1 text-center text-xs font-medium py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">PNG</a>
+                        <a href="/outputs/${result.jpg}" download class="flex-1 text-center text-xs font-medium py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">JPG</a>
+                        <a href="/outputs/${result.webp}" download class="flex-1 text-center text-xs font-medium py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">WebP</a>
                     </div>
                 </div>
             `;
-
             grid.appendChild(card);
         }
 
+        // --- History ---
         function formatDate(iso) {
             if (!iso) return '';
             const d = new Date(iso);
             return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         }
 
-        async function showGallery() {
-            const section = document.getElementById('gallerySection');
-            const grid = document.getElementById('galleryGrid');
-            const resultsGrid = document.getElementById('resultsGrid');
-
-            resultsGrid.classList.add('hidden');
-            section.classList.remove('hidden');
+        async function loadHistory() {
+            const grid = document.getElementById('historyGrid');
             grid.innerHTML = '<p class="text-sm text-white/30 text-center py-12">Loading...</p>';
 
             try {
@@ -570,19 +476,27 @@
                 const runs = await res.json();
 
                 if (!runs.length) {
-                    grid.innerHTML = '<p class="text-sm text-white/30 text-center py-12">No history yet</p>';
+                    grid.innerHTML = `
+                        <div class="text-center py-24">
+                            <div class="w-20 h-20 mx-auto mb-5 rounded-2xl bg-white/5 flex items-center justify-center">
+                                <svg class="w-10 h-10 text-white/15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-white/30">No ads generated yet</h3>
+                            <p class="text-sm text-white/20 mt-1">Fill in the form and hit generate to create your first ad</p>
+                        </div>`;
                     return;
                 }
 
                 grid.innerHTML = '';
                 runs.forEach(run => {
-                    const runEl = document.createElement('div');
-                    runEl.className = 'glass-card rounded-2xl p-5 fade-in';
+                    const el = document.createElement('div');
+                    el.className = 'glass-card rounded-2xl p-5 fade-in';
 
-                    const imagesHTML = run.images.map(img => `
+                    const imgs = run.images.map(img => `
                         <div class="glass rounded-xl overflow-hidden image-card">
-                            <img src="/outputs/${img.files.png}" alt="${img.variant_name}"
-                                class="w-full object-cover" loading="lazy">
+                            <img src="/outputs/${img.files.png}" alt="${img.variant_name}" class="w-full object-cover" loading="lazy">
                             <div class="p-3">
                                 <div class="flex items-center justify-between mb-1">
                                     <span class="text-xs font-medium text-white/70">${img.variant_name}</span>
@@ -597,7 +511,7 @@
                         </div>
                     `).join('');
 
-                    runEl.innerHTML = `
+                    el.innerHTML = `
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h3 class="text-sm font-semibold">${run.brand} — ${run.product}</h3>
@@ -605,22 +519,18 @@
                             </div>
                             <span class="text-[11px] text-white/20">${formatDate(run.created_at)}</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            ${imagesHTML}
-                        </div>
+                        <div class="grid grid-cols-2 gap-3">${imgs}</div>
                     `;
-                    grid.appendChild(runEl);
+                    grid.appendChild(el);
                 });
-
             } catch (err) {
                 grid.innerHTML = '<p class="text-sm text-red-400">Failed to load history</p>';
             }
         }
 
-        function hideGallery() {
-            document.getElementById('gallerySection').classList.add('hidden');
-            document.getElementById('resultsGrid').classList.remove('hidden');
-        }
+        // --- Init ---
+        updateFormatPreview();
+        loadHistory();
     </script>
 
 </body>
