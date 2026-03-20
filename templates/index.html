@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ad Creator - FLUX Image Generation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f4ff',
+                            100: '#dbe4ff',
+                            200: '#bac8ff',
+                            300: '#91a7ff',
+                            400: '#748ffc',
+                            500: '#5c7cfa',
+                            600: '#4c6ef5',
+                            700: '#4263eb',
+                            800: '#3b5bdb',
+                            900: '#364fc7',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * { font-family: 'Inter', sans-serif; }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f0c29 0%, #1a1a3e 40%, #24243e 100%);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #5c7cfa;
+            box-shadow: 0 0 0 3px rgba(92, 124, 250, 0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4c6ef5, #7048e8);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #5c7cfa, #845ef7);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(76, 110, 245, 0.35);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4c6ef5, #7048e8, #cc5de8);
+            background-size: 200% 100%;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(92, 124, 250, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(92, 124, 250, 0.2); }
+        }
+
+        .generating { animation: pulse-glow 2s ease-in-out infinite; }
+
+        .image-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .image-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .variant-badge {
+            background: linear-gradient(135deg, rgba(76, 110, 245, 0.2), rgba(112, 72, 232, 0.2));
+            border: 1px solid rgba(92, 124, 250, 0.3);
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+    <!-- Header -->
+    <header class="border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-lg font-bold">
+                    A
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Ad Creator</h1>
+                    <p class="text-xs text-white/40">Powered by FLUX Image Generation</p>
+                </div>
+            </div>
+            <button onclick="showGallery()" class="text-sm text-white/50 hover:text-white/80 transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                Gallery
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        <div class="grid lg:grid-cols-5 gap-8">
+
+            <!-- Left Panel: Input Form -->
+            <div class="lg:col-span-2">
+                <div class="glass rounded-2xl p-7 sticky top-10">
+                    <h2 class="text-lg font-semibold mb-1">Create Advertisement</h2>
+                    <p class="text-sm text-white/40 mb-6">Fill in your product details to generate 3 ad variants</p>
+
+                    <form id="adForm" onsubmit="handleSubmit(event)" class="space-y-5">
+
+                        <!-- Brand Name -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Brand Name</label>
+                            <input type="text" name="brand" required placeholder="e.g. Nike, Apple, Samsung"
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none">
+                        </div>
+
+                        <!-- Product Name -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Product Name</label>
+                            <input type="text" name="product" required placeholder="e.g. Running Shoes, iPhone 16"
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none">
+                        </div>
+
+                        <!-- Ad Format (Platform Size) -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Ad Format</label>
+                            <select name="format" required id="formatSelect"
+                                onchange="updateFormatPreview()"
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                                {% for fmt in formats %}
+                                <option value="{{ fmt.id }}" class="bg-gray-900"
+                                    data-aspect="{{ fmt.aspect }}"
+                                    data-export="{{ fmt.export_width }}x{{ fmt.export_height }}"
+                                    data-platform="{{ fmt.platform }}"
+                                    {% if fmt.id == 'instagram_post' %}selected{% endif %}>
+                                    {{ fmt.name }} ({{ fmt.aspect }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div id="formatPreview" class="mt-2 flex items-center gap-2">
+                                <span class="text-xs text-white/30" id="formatInfo">1080 x 1080 px &mdash; Instagram</span>
+                                <div id="formatThumb" class="w-6 h-6 border border-white/20 rounded-sm"></div>
+                            </div>
+                        </div>
+
+                        <!-- Messaging Style -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Messaging Style</label>
+                            <select name="messaging" required
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                                {% for msg in messaging_styles %}
+                                <option value="{{ msg.id }}" class="bg-gray-900"
+                                    {% if msg.id == 'informative' %}selected{% endif %}>
+                                    {{ msg.name }} &mdash; {{ msg.description }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Ad Style -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Visual Style</label>
+                            <select name="style" required
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                                <option value="" disabled selected class="bg-gray-900">Choose a style...</option>
+                                {% for style in styles %}
+                                <option value="{{ style }}" class="bg-gray-900">{{ style | capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Product Feature -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Key Feature</label>
+                            <input type="text" name="feature" required placeholder="e.g. Ultra lightweight, 48MP camera"
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none">
+                        </div>
+
+                        <!-- Submit -->
+                        <button type="submit" id="submitBtn"
+                            class="btn-primary w-full rounded-xl px-6 py-3.5 text-sm font-semibold flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Generate Advertisements
+                        </button>
+
+                    </form>
+
+                    <!-- Variant Info -->
+                    <div class="mt-6 pt-5 border-t border-white/5">
+                        <p class="text-xs text-white/30 mb-3 font-medium uppercase tracking-wider">Generated Variants</p>
+                        <div class="space-y-2">
+                            {% for v in variants %}
+                            <div class="flex items-start gap-3 text-xs">
+                                <span class="variant-badge text-white/70 px-2 py-0.5 rounded-md font-medium mt-0.5">{{ loop.index }}</span>
+                                <div>
+                                    <span class="text-white/60 font-medium">{{ v.name }}</span>
+                                    <span class="text-white/30 ml-1">— {{ v.description }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Results -->
+            <div class="lg:col-span-3">
+
+                <!-- Status Panel (hidden by default) -->
+                <div id="statusPanel" class="hidden mb-8 fade-in">
+                    <div class="glass rounded-2xl p-6 generating">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="spinner"></div>
+                                <span class="text-sm font-medium" id="statusText">Initializing...</span>
+                            </div>
+                            <span class="text-xs text-white/40" id="progressText">0 / 3</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                            <div class="progress-fill h-full rounded-full transition-all duration-700" id="progressBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Grid -->
+                <div id="resultsGrid" class="space-y-6">
+                    <!-- Empty state -->
+                    <div id="emptyState" class="text-center py-24">
+                        <div class="w-20 h-20 mx-auto mb-5 rounded-2xl bg-white/5 flex items-center justify-center">
+                            <svg class="w-10 h-10 text-white/15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white/30">No ads generated yet</h3>
+                        <p class="text-sm text-white/20 mt-1">Fill in the form and hit generate to create your ad variants</p>
+                    </div>
+                </div>
+
+                <!-- Gallery Section (hidden) -->
+                <div id="gallerySection" class="hidden">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-lg font-semibold">Previous Generations</h2>
+                        <button onclick="hideGallery()" class="text-sm text-white/40 hover:text-white/70 transition">Back</button>
+                    </div>
+                    <div id="galleryGrid" class="grid grid-cols-2 gap-4"></div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let pollInterval = null;
+
+        // Format preview thumbnail
+        function updateFormatPreview() {
+            const sel = document.getElementById('formatSelect');
+            const opt = sel.options[sel.selectedIndex];
+            const aspect = opt.dataset.aspect;
+            const exportSize = opt.dataset.export;
+            const platform = opt.dataset.platform;
+            const [w, h] = exportSize.split('x').map(Number);
+
+            document.getElementById('formatInfo').innerHTML = `${w} &times; ${h} px &mdash; ${platform}`;
+
+            // Scale thumb to show aspect ratio (max 28px on longer side)
+            const thumb = document.getElementById('formatThumb');
+            const maxPx = 28;
+            const ratio = w / h;
+            if (ratio >= 1) {
+                thumb.style.width = maxPx + 'px';
+                thumb.style.height = Math.round(maxPx / ratio) + 'px';
+            } else {
+                thumb.style.height = maxPx + 'px';
+                thumb.style.width = Math.round(maxPx * ratio) + 'px';
+            }
+        }
+
+        // Init on load
+        updateFormatPreview();
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // Disable button
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> Starting...';
+
+            // Show status, hide empty state
+            document.getElementById('statusPanel').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
+            // Clear previous results
+            const resultsGrid = document.getElementById('resultsGrid');
+            resultsGrid.querySelectorAll('.result-card').forEach(el => el.remove());
+
+            try {
+                const res = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(result.error || 'Generation failed');
+                }
+
+                // Start polling
+                startPolling();
+
+            } catch (err) {
+                alert(err.message);
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    Generate Advertisements`;
+                document.getElementById('statusPanel').classList.add('hidden');
+            }
+        }
+
+        function startPolling() {
+            pollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/status');
+                    const status = await res.json();
+
+                    updateStatus(status);
+
+                    if (!status.running) {
+                        clearInterval(pollInterval);
+                        onComplete(status);
+                    }
+                } catch (err) {
+                    console.error('Polling error:', err);
+                }
+            }, 2000);
+        }
+
+        function updateStatus(status) {
+            const statusText = document.getElementById('statusText');
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+
+            if (status.running) {
+                statusText.textContent = `Generating: ${status.current_variant}...`;
+            } else if (status.error) {
+                statusText.textContent = `Error: ${status.error}`;
+            } else {
+                statusText.textContent = 'Complete!';
+            }
+
+            progressText.textContent = `${status.progress} / ${status.total}`;
+            progressBar.style.width = `${(status.progress / status.total) * 100}%`;
+
+            // Add result cards as they come in
+            const resultsGrid = document.getElementById('resultsGrid');
+            const existingCards = resultsGrid.querySelectorAll('.result-card').length;
+
+            for (let i = existingCards; i < status.results.length; i++) {
+                addResultCard(status.results[i], i + 1);
+            }
+        }
+
+        function onComplete(status) {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = false;
+            btn.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                Generate Advertisements`;
+
+            // Hide status after a delay
+            setTimeout(() => {
+                const panel = document.getElementById('statusPanel');
+                panel.classList.add('hidden');
+                panel.querySelector('.glass').classList.remove('generating');
+            }, 2000);
+
+            if (status.error) {
+                alert('Generation failed: ' + status.error);
+            }
+        }
+
+        function addResultCard(result, index) {
+            const grid = document.getElementById('resultsGrid');
+
+            const card = document.createElement('div');
+            card.className = 'result-card image-card glass-card rounded-2xl overflow-hidden fade-in';
+
+            const variantLabels = ['Studio Luxury', 'Lifestyle', 'Creative Concept'];
+            const variantLabel = result.metadata?.variant_name || variantLabels[index - 1] || `Variant ${index}`;
+
+            const dims = result.metadata?.dimensions || '';
+            const msgStyle = result.metadata?.messaging || '';
+            const fmtId = result.metadata?.format || '';
+
+            card.innerHTML = `
+                <div class="relative">
+                    <img src="/outputs/${result.png}" alt="${variantLabel}"
+                        class="w-full object-cover"
+                        loading="lazy">
+                    <div class="absolute top-3 left-3 flex gap-2">
+                        <span class="variant-badge text-xs font-medium text-white/80 px-3 py-1 rounded-lg backdrop-blur-sm">
+                            ${variantLabel}
+                        </span>
+                    </div>
+                    <div class="absolute top-3 right-3">
+                        <span class="text-xs text-white/60 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-md">
+                            ${dims}
+                        </span>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-sm">${variantLabel}</h3>
+                        <span class="text-xs text-white/30">Seed: ${result.metadata?.seed || 'N/A'}</span>
+                    </div>
+                    <div class="flex gap-2 mb-3">
+                        ${fmtId ? `<span class="text-[10px] text-white/40 bg-white/5 px-2 py-0.5 rounded-md">${fmtId.replace(/_/g, ' ')}</span>` : ''}
+                        ${msgStyle ? `<span class="text-[10px] text-white/40 bg-white/5 px-2 py-0.5 rounded-md">${msgStyle}</span>` : ''}
+                    </div>
+                    <p class="text-xs text-white/40 leading-relaxed line-clamp-2 mb-4">${result.metadata?.prompt || ''}</p>
+                    <div class="flex gap-2">
+                        <a href="/outputs/${result.png}" download
+                            class="flex-1 text-center text-xs font-medium py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                            PNG
+                        </a>
+                        <a href="/outputs/${result.jpg}" download
+                            class="flex-1 text-center text-xs font-medium py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                            JPG
+                        </a>
+                        <a href="/outputs/${result.webp}" download
+                            class="flex-1 text-center text-xs font-medium py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                            WebP
+                        </a>
+                    </div>
+                </div>
+            `;
+
+            grid.appendChild(card);
+        }
+
+        async function showGallery() {
+            const section = document.getElementById('gallerySection');
+            const grid = document.getElementById('galleryGrid');
+            const resultsGrid = document.getElementById('resultsGrid');
+
+            resultsGrid.classList.add('hidden');
+            section.classList.remove('hidden');
+            grid.innerHTML = '<p class="text-sm text-white/30 col-span-2">Loading...</p>';
+
+            try {
+                const res = await fetch('/api/gallery');
+                const images = await res.json();
+
+                if (images.length === 0) {
+                    grid.innerHTML = '<p class="text-sm text-white/30 col-span-2 text-center py-12">No previous generations found</p>';
+                    return;
+                }
+
+                grid.innerHTML = '';
+                images.forEach(img => {
+                    const card = document.createElement('div');
+                    card.className = 'glass-card rounded-xl overflow-hidden image-card';
+                    card.innerHTML = `
+                        <img src="/outputs/${img.files.png}" alt="${img.variant_name}"
+                            class="w-full aspect-square object-cover" loading="lazy">
+                        <div class="p-3">
+                            <p class="text-xs font-medium">${img.brand} — ${img.variant_name}</p>
+                            <p class="text-xs text-white/30 mt-0.5">${img.product}</p>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+            } catch (err) {
+                grid.innerHTML = '<p class="text-sm text-red-400 col-span-2">Failed to load gallery</p>';
+            }
+        }
+
+        function hideGallery() {
+            document.getElementById('gallerySection').classList.add('hidden');
+            document.getElementById('resultsGrid').classList.remove('hidden');
+        }
+    </script>
+
+</body>
+</html>
