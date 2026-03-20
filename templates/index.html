@@ -250,7 +250,7 @@
                                     class="flex-1 accent-brand-500 h-1.5 cursor-pointer">
                                 <span id="numImagesVal" class="text-sm font-semibold text-white/70 w-4 text-center">1</span>
                             </div>
-                            <p class="text-xs text-white/30 mt-1">Total images: <span id="totalImages">3</span> (3 variants &times; <span id="perVariant">1</span>)</p>
+                            <p class="text-xs text-white/30 mt-1">Total images: <span id="totalImages">1</span> (<span id="variantCount">1</span> variants &times; <span id="perVariant">1</span>)</p>
                         </div>
 
                         <!-- Submit -->
@@ -264,18 +264,21 @@
 
                     </form>
 
-                    <!-- Variant Info -->
+                    <!-- Variant Selection -->
                     <div class="mt-6 pt-5 border-t border-white/5">
-                        <p class="text-xs text-white/30 mb-3 font-medium uppercase tracking-wider">Generated Variants</p>
+                        <p class="text-xs text-white/30 mb-3 font-medium uppercase tracking-wider">Select Variants</p>
                         <div class="space-y-2">
                             {% for v in variants %}
-                            <div class="flex items-start gap-3 text-xs">
-                                <span class="variant-badge text-white/70 px-2 py-0.5 rounded-md font-medium mt-0.5">{{ loop.index }}</span>
+                            <label class="flex items-start gap-3 text-xs cursor-pointer group">
+                                <input type="checkbox" name="variants" value="{{ v.name }}"
+                                    {% if loop.first %}checked{% endif %}
+                                    onchange="updateTotalImages()"
+                                    class="mt-0.5 accent-brand-500 cursor-pointer">
                                 <div>
-                                    <span class="text-white/60 font-medium">{{ v.name }}</span>
+                                    <span class="text-white/60 font-medium group-hover:text-white/80 transition">{{ v.name }}</span>
                                     <span class="text-white/30 ml-1">— {{ v.description }}</span>
                                 </div>
-                            </div>
+                            </label>
                             {% endfor %}
                         </div>
                     </div>
@@ -356,11 +359,15 @@
         }
 
         // Update total images count
-        document.getElementById('numImagesRange').addEventListener('input', function() {
-            const n = parseInt(this.value);
+        function updateTotalImages() {
+            const n = parseInt(document.getElementById('numImagesRange').value);
+            const variantCount = document.querySelectorAll('input[name="variants"]:checked').length;
             document.getElementById('perVariant').textContent = n;
-            document.getElementById('totalImages').textContent = n * 3;
-        });
+            document.getElementById('totalImages').textContent = n * variantCount;
+            document.getElementById('variantCount').textContent = variantCount;
+        }
+
+        document.getElementById('numImagesRange').addEventListener('input', updateTotalImages);
 
         // Init on load
         updateFormatPreview();
@@ -371,6 +378,15 @@
             const form = e.target;
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
+
+            // Collect selected variants as array
+            const selectedVariants = [...document.querySelectorAll('input[name="variants"]:checked')]
+                .map(cb => cb.value);
+            if (selectedVariants.length === 0) {
+                alert('Please select at least one variant.');
+                return;
+            }
+            data.variants = selectedVariants;
 
             // Disable button
             const btn = document.getElementById('submitBtn');

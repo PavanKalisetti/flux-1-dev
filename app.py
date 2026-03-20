@@ -50,15 +50,19 @@ def generate():
     format_id = data.get("format", "instagram_post").strip()
     messaging_id = data.get("messaging", "informative").strip()
     num_images = min(int(data.get("num_images", 1)), 5)
+    selected_variants = data.get("variants", [])
 
     if not all([brand, product, style, feature]):
         return jsonify({"error": "All fields are required"}), 400
+
+    if not selected_variants:
+        return jsonify({"error": "Select at least one variant"}), 400
 
     ad_format = get_format_by_id(format_id)
     if not ad_format:
         return jsonify({"error": "Invalid ad format"}), 400
 
-    total = len(AD_VARIANTS) * num_images
+    total = len(selected_variants) * num_images
 
     # Reset status
     generation_status = {
@@ -73,7 +77,7 @@ def generate():
     # Run generation in background thread
     thread = threading.Thread(
         target=_run_generation,
-        args=(brand, product, style, feature, format_id, messaging_id, ad_format, num_images),
+        args=(brand, product, style, feature, format_id, messaging_id, ad_format, num_images, selected_variants),
     )
     thread.daemon = True
     thread.start()
@@ -81,11 +85,12 @@ def generate():
     return jsonify({"message": "Generation started", "total": total})
 
 
-def _run_generation(brand, product, style, feature, format_id, messaging_id, ad_format, num_images):
+def _run_generation(brand, product, style, feature, format_id, messaging_id, ad_format, num_images, selected_variants):
     global generation_status
 
     try:
-        prompts = build_prompts(brand, product, style, feature, messaging_id)
+        all_prompts = build_prompts(brand, product, style, feature, messaging_id)
+        prompts = [p for p in all_prompts if p["name"] in selected_variants]
         data = {
             "brand": brand, "product": product, "style": style,
             "feature": feature, "format": format_id, "messaging": messaging_id,
