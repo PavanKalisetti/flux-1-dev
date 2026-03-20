@@ -106,10 +106,8 @@ def _run_generation(brand, product, style, feature, format_id, messaging_id, ad_
 
                 image, seed = generate_image(
                     variant["prompt"],
-                    gen_width=ad_format["gen_width"],
-                    gen_height=ad_format["gen_height"],
-                    export_width=ad_format["export_width"],
-                    export_height=ad_format["export_height"],
+                    width=ad_format["width"],
+                    height=ad_format["height"],
                 )
                 image = add_brand_text(image, brand)
 

@@ -63,8 +63,7 @@ def load_pipeline():
     return _pipeline
 
 
-def generate_image(prompt: str, gen_width: int = 1024, gen_height: int = 1024,
-                   export_width: int = None, export_height: int = None,
+def generate_image(prompt: str, width: int = 1024, height: int = 1024,
                    seed: int = None):
     """Generate a single image from a prompt at the given dimensions."""
     pipe = load_pipeline()
@@ -72,23 +71,18 @@ def generate_image(prompt: str, gen_width: int = 1024, gen_height: int = 1024,
     if seed is None:
         seed = random.randint(0, 2**32 - 1)
 
-    print(f"Generating {gen_width}x{gen_height} with seed: {seed}")
+    print(f"Generating {width}x{height} with seed: {seed}")
 
     with torch.inference_mode():
         image = pipe(
             prompt,
-            height=gen_height,
-            width=gen_width,
+            height=height,
+            width=width,
             guidance_scale=GUIDANCE_SCALE,
             num_inference_steps=INFERENCE_STEPS,
             max_sequence_length=512,
             generator=torch.Generator("cpu").manual_seed(seed)
         ).images[0]
-
-    # Resize to export dimensions if different from generation size
-    if export_width and export_height:
-        if export_width != gen_width or export_height != gen_height:
-            image = image.resize((export_width, export_height), Image.LANCZOS)
 
     return image, seed
 

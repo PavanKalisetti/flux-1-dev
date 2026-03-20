@@ -195,9 +195,8 @@
                                 {% for fmt in formats %}
                                 <option value="{{ fmt.id }}" class="bg-gray-900"
                                     data-aspect="{{ fmt.aspect }}"
-                                    data-export="{{ fmt.export_width }}x{{ fmt.export_height }}"
-                                    data-platform="{{ fmt.platform }}"
-                                    {% if fmt.id == 'instagram_post' %}selected{% endif %}>
+                                    data-size="{{ fmt.width }}x{{ fmt.height }}"
+                                    {% if fmt.id == 'square' %}selected{% endif %}>
                                     {{ fmt.name }} ({{ fmt.aspect }})
                                 </option>
                                 {% endfor %}
@@ -339,11 +338,10 @@
             const sel = document.getElementById('formatSelect');
             const opt = sel.options[sel.selectedIndex];
             const aspect = opt.dataset.aspect;
-            const exportSize = opt.dataset.export;
-            const platform = opt.dataset.platform;
-            const [w, h] = exportSize.split('x').map(Number);
+            const size = opt.dataset.size;
+            const [w, h] = size.split('x').map(Number);
 
-            document.getElementById('formatInfo').innerHTML = `${w} &times; ${h} px &mdash; ${platform}`;
+            document.getElementById('formatInfo').innerHTML = `${w} &times; ${h} px`;
 
             // Scale thumb to show aspect ratio (max 28px on longer side)
             const thumb = document.getElementById('formatThumb');
