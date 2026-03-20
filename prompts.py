@@ -218,14 +218,14 @@ AD_STYLES = [
 # HELPERS
 # -----------------------
 
-def get_format_by_id(format_id: str) -> dict | None:
+def get_format_by_id(format_id: str):
     for fmt in AD_FORMATS:
         if fmt["id"] == format_id:
             return fmt
     return None
 
 
-def get_messaging_by_id(messaging_id: str) -> dict | None:
+def get_messaging_by_id(messaging_id: str):
     for msg in MESSAGING_STYLES:
         if msg["id"] == messaging_id:
             return msg
@@ -233,7 +233,7 @@ def get_messaging_by_id(messaging_id: str) -> dict | None:
 
 
 def build_prompts(brand: str, product: str, style: str, feature: str,
-                  messaging_id: str = "informative") -> list[dict]:
+                  messaging_id: str = "informative"):
     """
     Build prompts for all ad variants using user input.
 

@@ -65,7 +65,7 @@ def load_pipeline():
 
 def generate_image(prompt: str, gen_width: int = 1024, gen_height: int = 1024,
                    export_width: int = None, export_height: int = None,
-                   seed: int = None) -> tuple[Image.Image, int]:
+                   seed: int = None):
     """Generate a single image from a prompt at the given dimensions."""
     pipe = load_pipeline()
 
