@@ -29,7 +29,7 @@ def sanitize_filename(name: str) -> str:
     return re.sub(r'[^\w\-]', '_', name).strip('_').lower()
 
 
-def get_font(size: int = FONT_SIZE) -> ImageFont.FreeTypeFont:
+def get_font(size: int = 70):
     font_paths = {
         "Darwin": "/System/Library/Fonts/Supplemental/Arial.ttf",
         "Linux": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
