@@ -6,7 +6,9 @@ Web interface for generating advertisement images using FLUX.
 
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import os
+import json
 import threading
+from datetime import datetime
 
 from prompts import build_prompts, AD_STYLES, AD_VARIANTS, AD_FORMATS, MESSAGING_STYLES, get_format_by_id
 from generator import generate_image, add_brand_text, save_image, OUTPUT_DIR
@@ -89,6 +91,7 @@ def _run_generation(brand, product, style, feature, format_id, messaging_id, ad_
     global generation_status
 
     try:
+        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
         all_prompts = build_prompts(brand, product, style, feature, messaging_id)
         prompts = [p for p in all_prompts if p["name"] in selected_variants]
         data = {
@@ -114,7 +117,7 @@ def _run_generation(brand, product, style, feature, format_id, messaging_id, ad_
                 variant_label = f"{i}_{img_num}" if num_images > 1 else str(i)
                 result = save_image(
                     image, brand, variant["prompt"], seed,
-                    label, variant_label, data
+                    label, variant_label, data, run_id
                 )
                 generation_status["results"].append(result)
 
@@ -135,25 +138,41 @@ def status():
 
 @app.route("/api/gallery")
 def gallery():
-    """List all previously generated images."""
+    """List all previous runs grouped by run_id, newest first."""
     if not os.path.exists(OUTPUT_DIR):
         return jsonify([])
 
-    images = []
+    runs = {}
     for f in sorted(os.listdir(OUTPUT_DIR)):
-        if f.endswith("_meta.json"):
-            import json
-            with open(os.path.join(OUTPUT_DIR, f)) as fh:
-                meta = json.load(fh)
-            base = f.replace("_meta.json", "")
-            meta["files"] = {
-                "png": f"{base}.png",
-                "jpg": f"{base}.jpg",
-                "webp": f"{base}.webp",
-            }
-            images.append(meta)
+        if not f.endswith("_meta.json"):
+            continue
+        with open(os.path.join(OUTPUT_DIR, f)) as fh:
+            meta = json.load(fh)
+        base = f.replace("_meta.json", "")
+        meta["files"] = {
+            "png": f"{base}.png",
+            "jpg": f"{base}.jpg",
+            "webp": f"{base}.webp",
+        }
 
-    return jsonify(images)
+        run_id = meta.get("run_id", "unknown")
+        if run_id not in runs:
+            runs[run_id] = {
+                "run_id": run_id,
+                "brand": meta.get("brand", ""),
+                "product": meta.get("product", ""),
+                "style": meta.get("style", ""),
+                "feature": meta.get("feature", ""),
+                "format": meta.get("format", ""),
+                "messaging": meta.get("messaging", ""),
+                "created_at": meta.get("created_at", ""),
+                "images": [],
+            }
+        runs[run_id]["images"].append(meta)
+
+    # Sort runs newest first
+    result = sorted(runs.values(), key=lambda r: r["created_at"], reverse=True)
+    return jsonify(result)
 
 
 if __name__ == "__main__":

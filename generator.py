@@ -10,6 +10,7 @@ import os
 import re
 import json
 import platform
+from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 
 # -----------------------
@@ -118,10 +119,13 @@ def add_brand_text(image: Image.Image, brand: str) -> Image.Image:
 
 
 def save_image(image: Image.Image, brand: str, prompt: str, seed: int,
-               variant_name: str, variant_index: int, data: dict) -> dict:
-    """Save image in multiple formats and return file paths."""
+               variant_name: str, variant_index, data: dict, run_id: str = None):
+    """Save image in multiple formats with unique timestamp-based names."""
     safe_brand = sanitize_filename(brand)
-    base_name = f"{safe_brand}_v{variant_index}"
+    if run_id is None:
+        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    base_name = f"{safe_brand}_{run_id}_v{variant_index}"
     base_path = os.path.join(OUTPUT_DIR, base_name)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -131,7 +135,8 @@ def save_image(image: Image.Image, brand: str, prompt: str, seed: int,
     image.save(base_path + ".webp", "WEBP")
 
     metadata = {
-        "variant": variant_index,
+        "run_id": run_id,
+        "variant": str(variant_index),
         "variant_name": variant_name,
         "prompt": prompt,
         "seed": seed,
@@ -142,12 +147,13 @@ def save_image(image: Image.Image, brand: str, prompt: str, seed: int,
         "format": data.get("format", ""),
         "messaging": data.get("messaging", ""),
         "dimensions": f"{image.width}x{image.height}",
+        "created_at": datetime.now().isoformat(),
     }
 
     with open(base_path + "_meta.json", "w") as f:
         json.dump(metadata, f, indent=2)
 
-    print(f"Saved variant {variant_index}: {base_path}")
+    print(f"Saved: {base_path}")
 
     return {
         "png": f"{base_name}.png",
