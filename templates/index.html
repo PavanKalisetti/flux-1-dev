@@ -241,6 +241,18 @@
                                 class="input-field w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none">
                         </div>
 
+                        <!-- Number of Images -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Images per Variant</label>
+                            <div class="flex items-center gap-3">
+                                <input type="range" name="num_images" min="1" max="5" value="1" id="numImagesRange"
+                                    oninput="document.getElementById('numImagesVal').textContent = this.value"
+                                    class="flex-1 accent-brand-500 h-1.5 cursor-pointer">
+                                <span id="numImagesVal" class="text-sm font-semibold text-white/70 w-4 text-center">1</span>
+                            </div>
+                            <p class="text-xs text-white/30 mt-1">Total images: <span id="totalImages">3</span> (3 variants &times; <span id="perVariant">1</span>)</p>
+                        </div>
+
                         <!-- Submit -->
                         <button type="submit" id="submitBtn"
                             class="btn-primary w-full rounded-xl px-6 py-3.5 text-sm font-semibold flex items-center justify-center gap-2">
@@ -342,6 +354,13 @@
                 thumb.style.width = Math.round(maxPx * ratio) + 'px';
             }
         }
+
+        // Update total images count
+        document.getElementById('numImagesRange').addEventListener('input', function() {
+            const n = parseInt(this.value);
+            document.getElementById('perVariant').textContent = n;
+            document.getElementById('totalImages').textContent = n * 3;
+        });
 
         // Init on load
         updateFormatPreview();

@@ -49,6 +49,7 @@ def generate():
     feature = data.get("feature", "").strip()
     format_id = data.get("format", "instagram_post").strip()
     messaging_id = data.get("messaging", "informative").strip()
+    num_images = min(int(data.get("num_images", 1)), 5)
 
     if not all([brand, product, style, feature]):
         return jsonify({"error": "All fields are required"}), 400
@@ -57,11 +58,13 @@ def generate():
     if not ad_format:
         return jsonify({"error": "Invalid ad format"}), 400
 
+    total = len(AD_VARIANTS) * num_images
+
     # Reset status
     generation_status = {
         "running": True,
         "progress": 0,
-        "total": 3,
+        "total": total,
         "current_variant": "",
         "results": [],
         "error": None,
@@ -70,15 +73,15 @@ def generate():
     # Run generation in background thread
     thread = threading.Thread(
         target=_run_generation,
-        args=(brand, product, style, feature, format_id, messaging_id, ad_format),
+        args=(brand, product, style, feature, format_id, messaging_id, ad_format, num_images),
     )
     thread.daemon = True
     thread.start()
 
-    return jsonify({"message": "Generation started", "total": 3})
+    return jsonify({"message": "Generation started", "total": total})
 
 
-def _run_generation(brand, product, style, feature, format_id, messaging_id, ad_format):
+def _run_generation(brand, product, style, feature, format_id, messaging_id, ad_format, num_images):
     global generation_status
 
     try:
@@ -88,24 +91,29 @@ def _run_generation(brand, product, style, feature, format_id, messaging_id, ad_
             "feature": feature, "format": format_id, "messaging": messaging_id,
         }
 
+        count = 0
         for i, variant in enumerate(prompts, start=1):
-            generation_status["current_variant"] = variant["name"]
-            generation_status["progress"] = i - 1
+            for img_num in range(1, num_images + 1):
+                count += 1
+                label = f"{variant['name']} #{img_num}" if num_images > 1 else variant["name"]
+                generation_status["current_variant"] = label
+                generation_status["progress"] = count - 1
 
-            image, seed = generate_image(
-                variant["prompt"],
-                gen_width=ad_format["gen_width"],
-                gen_height=ad_format["gen_height"],
-                export_width=ad_format["export_width"],
-                export_height=ad_format["export_height"],
-            )
-            image = add_brand_text(image, brand)
+                image, seed = generate_image(
+                    variant["prompt"],
+                    gen_width=ad_format["gen_width"],
+                    gen_height=ad_format["gen_height"],
+                    export_width=ad_format["export_width"],
+                    export_height=ad_format["export_height"],
+                )
+                image = add_brand_text(image, brand)
 
-            result = save_image(
-                image, brand, variant["prompt"], seed,
-                variant["name"], i, data
-            )
-            generation_status["results"].append(result)
+                variant_label = f"{i}_{img_num}" if num_images > 1 else str(i)
+                result = save_image(
+                    image, brand, variant["prompt"], seed,
+                    label, variant_label, data
+                )
+                generation_status["results"].append(result)
 
         generation_status["progress"] = generation_status["total"]
 
