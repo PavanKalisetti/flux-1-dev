@@ -170,14 +170,14 @@
                         <!-- Brand Name -->
                         <div>
                             <label class="block text-sm font-medium text-white/70 mb-2">Brand Name</label>
-                            <input type="text" name="brand" required placeholder="e.g. Nike, Apple, Samsung"
+                            <input type="text" name="brand" required placeholder="e.g. kinley,Nike, Apple, Samsung"
                                 class="input-field w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none">
                         </div>
 
                         <!-- Product Name -->
                         <div>
                             <label class="block text-sm font-medium text-white/70 mb-2">Product Name</label>
-                            <input type="text" name="product" required placeholder="e.g. Running Shoes, iPhone 16"
+                            <input type="text" name="product" required placeholder="e.g. Water bottle, Running Shoes, iPhone 16"
                                 class="input-field w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none">
                         </div>
 
@@ -221,9 +221,9 @@
                             <label class="block text-sm font-medium text-white/70 mb-2">Visual Style</label>
                             <select name="style" required
                                 class="input-field w-full rounded-xl px-4 py-3 text-sm text-white outline-none appearance-none cursor-pointer">
-                                <option value="" disabled selected class="bg-gray-900">Choose a style...</option>
                                 {% for style in styles %}
-                                <option value="{{ style }}" class="bg-gray-900">{{ style | capitalize }}</option>
+                                <option value="{{ style }}" class="bg-gray-900"
+                                    {% if style == 'professional' %}selected{% endif %}>{{ style | capitalize }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -237,7 +237,7 @@
 
                         <!-- Variant Selection -->
                         <div>
-                            <label class="block text-sm font-medium text-white/70 mb-2">Variants</label>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Variant</label>
                             <div class="space-y-2">
                                 {% for v in variants %}
                                 <label class="flex items-start gap-3 text-xs cursor-pointer group">
