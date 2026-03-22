@@ -1,0 +1,151 @@
+============================================================
+  Advertisement Creator - Setup & Execution Guide
+============================================================
+
+# 1. Create virtual environment
+export python=python3       # Set python as python3
+python -m venv venv
+source venv/bin/activate    # On Linux/Mac
+
+# 2. Install dependencies
+pip install --upgrade pip   # if required
+pip install "torch>=2.0.0" "diffusers>=0.25.0" "transformers>=4.36.0" "accelerate>=0.25.0" "sentencepiece>=0.1.99" "protobuf>=3.20.0" "Pillow>=10.0.0" "flask>=3.0.0"
+
+# 3. Check if below files are available before running
+ls main.py generator.py prompts.py index.html
+
+# 4. Run the application
+python main.py
+
+    On startup you will see:
+    -------------------------------------------------------
+    Advertisement Creator
+      1. Terminal
+      2. Web UI
+    Choose mode [1/2] (default: 1):
+    -------------------------------------------------------
+
+    Choose 1 for Terminal mode or 2 for Web UI mode.
+    Default is Terminal (just press Enter).
+
+
+============================================================
+  MODE 1: TERMINAL (default)
+============================================================
+
+Choose mode [1/2] (default: 1): 1
+
+    The terminal will walk you through each input:
+
+    Step 1 - Brand Name
+        Brand Name (e.g. Sony, Kinley, Nike, Apple): SONY
+
+    Step 2 - Product Name
+        Product Name (e.g. Headphone, Water Bottle, Running Shoes, iPhone 16): Headphone
+
+    Step 3 - Ad Format
+        Ad Formats:
+          1. Social Media Post (1:1) — 1024x1024
+          2. Story / Reels / Portrait (9:16) — 768x1344
+          3. Banner / Landscape (16:9) — 1024x576
+        Choose format [1-3] (default: 1): 1
+
+    Step 4 - Messaging Style
+        Messaging Styles:
+          1. Emotional — Evokes feelings and personal connection
+          2. Informative — Highlights specs, facts, and product details
+          3. Call-to-Action — Urgency-driven, encourages immediate action
+          4. Inspirational — Motivational, aspirational imagery
+          5. Humorous — Playful, fun, lighthearted tone
+          6. Professional — Corporate, trustworthy, polished look
+        Choose messaging [1-6] (default: 2 Informative): 2
+
+    Step 5 - Visual Style
+        Visual Styles:
+          1. Luxury       2. Minimal      3. Energetic
+          4. Bold         5. Elegant      6. Playful
+          7. Professional 8. Vintage      9. Futuristic
+          10. Natural
+        Choose style [1-10] (default: 7 Professional): 7
+
+    Step 6 - Key Feature
+        Key Feature (e.g. Good Looking, Ultra lightweight, 48MP camera): Good Looking
+
+    Step 7 - Custom Requirements (optional)
+        Custom Requirements - optional (e.g. blue background, tropical setting,
+        winter theme, target audience: young adults):
+        (Press Enter to skip)
+
+    Step 8 - Variant Selection
+        Variants:
+          1. Creative Concept — Surreal, artistic, eye-catching ad composition
+          2. Studio Luxury — Clean studio product shot with professional lighting
+          3. Lifestyle — Product in a real-life usage scenario
+        Select variants (comma-separated, e.g. 1,2,3) (default: 1): 1
+
+    Step 9 - Images per Variant
+        Images per variant [1-5] (default: 1): 1
+
+    After all inputs, generation begins:
+    -------------------------------------------------------
+    --- Generating 1 image(s) ---
+    Brand: SONY | Product: Headphone | Style: professional
+    Format: Social Media Post | Messaging: informative | Feature: Good Looking
+    Variants: Creative Concept | Images per variant: 1
+
+    [1/1] Generating: Creative Concept...
+      Saved: sony_20260322_211530_v1.png, sony_20260322_211530_v1.jpg, sony_20260322_211530_v1.webp
+
+    Done! 1 image(s) saved to outputs/
+    -------------------------------------------------------
+
+    Generated images are saved in the outputs/ folder as PNG, JPG, and WebP.
+
+
+============================================================
+  MODE 2: WEB UI
+============================================================
+
+Choose mode [1/2] (default: 1): 2
+
+    The terminal will show:
+    -------------------------------------------------------
+    Starting web server on http://localhost:5012
+     * Serving Flask app 'main'
+     * Running on http://127.0.0.1:5012
+    -------------------------------------------------------
+
+# 5. Open the below link in your browser
+    http://localhost:5012
+    or
+    http://127.0.0.1:5012
+
+# 6. Fill in the "Create Advertisement" form:
+    6.1  Brand Name         - Provide any brand name (e.g. SONY, Kinley)
+    6.2  Product Name       - Product you are advertising (e.g. Headphone, Water Bottle)
+    6.3  Ad Format          - Dropdown: Social Media Post (1:1), Story/Reels (9:16), Banner (16:9)
+    6.4  Messaging Style    - Dropdown: Emotional, Informative, Call-to-Action, Inspirational, Humorous, Professional
+    6.5  Visual Style       - Dropdown: Luxury, Minimal, Energetic, Bold, Elegant, Playful, Professional, Vintage, Futuristic, Natural
+    6.6  Key Feature        - Main selling point (e.g. Ultra lightweight, Good Looking)
+    6.7  Custom Requirements (optional) - Additional instructions (e.g. blue background, target audience: young adults)
+    6.8  Variant            - Checkbox: Creative Concept, Studio Luxury, Lifestyle (select one or more)
+    6.9  Images per Variant  - Slider: 1 to 5
+
+    Note: Custom requirements should be clear and crisp.
+
+# 7. Click "Generate Advertisements" and wait for the progress bar to complete.
+
+# 8. Download generated images (PNG, JPG, WebP) from the results panel.
+    - All images are also saved in the outputs/ folder.
+    - History of all previous generations is shown on the right panel by default.
+
+
+============================================================
+  NOTES
+============================================================
+
+- First run downloads the FLUX model (~12 GB). This is a one-time download.
+- RAM usage: ~26 GB with CPU offloading. 32 GB RAM recommended.
+- GPU is optional but recommended for faster generation.
+- Generated images and metadata are saved in the outputs/ folder.
+- Each image is saved with a unique timestamp so nothing gets overwritten.
