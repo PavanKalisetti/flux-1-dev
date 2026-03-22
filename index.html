@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ad Creator - FLUX Image Generation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f4ff',
+                            100: '#dbe4ff',
+                            200: '#bac8ff',
+                            300: '#91a7ff',
+                            400: '#748ffc',
+                            500: '#5c7cfa',
+                            600: '#4c6ef5',
+                            700: '#4263eb',
+                            800: '#3b5bdb',
+                            900: '#364fc7',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * { font-family: 'Inter', sans-serif; }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f0c29 0%, #1a1a3e 40%, #24243e 100%);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #5c7cfa;
+            box-shadow: 0 0 0 3px rgba(92, 124, 250, 0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4c6ef5, #7048e8);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #5c7cfa, #845ef7);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(76, 110, 245, 0.35);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4c6ef5, #7048e8, #cc5de8);
+            background-size: 200% 100%;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(92, 124, 250, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(92, 124, 250, 0.2); }
+        }
+
+        .generating { animation: pulse-glow 2s ease-in-out infinite; }
+
+        .image-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .image-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .variant-badge {
+            background: linear-gradient(135deg, rgba(76, 110, 245, 0.2), rgba(112, 72, 232, 0.2));
+            border: 1px solid rgba(92, 124, 250, 0.3);
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+    <!-- Header -->
+    <header class="border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-lg font-bold">
+                    A
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Ad Creator</h1>
+                    <p class="text-xs text-white/40">Powered by FLUX Image Generation</p>
+                </div>
+            </div>
+            <span class="text-xs text-white/30">Capstone Project CS[03]</span>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        <div class="grid lg:grid-cols-5 gap-8">
+
+            <!-- Left Panel: Input Form -->
+            <div class="lg:col-span-2">
+                <div class="glass rounded-2xl p-7 sticky top-10">
+                    <h2 class="text-lg font-semibold mb-1">Create Advertisement</h2>
+                    <p class="text-sm text-white/40 mb-6">Fill in your product details to generate 3 ad variants</p>
+
+                    <form id="adForm" onsubmit="handleSubmit(event)" class="space-y-5">
+
+                        <!-- Brand Name -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Brand Name</label>
+                            <input type="text" name="brand" required placeholder="e.g. kinley,Nike, Apple, Samsung"
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none">
+                        </div>
+
+                        <!-- Product Name -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Product Name</label>
+                            <input type="text" name="product" required placeholder="e.g. Water bottle, Running Shoes, iPhone 16"
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none">
+                        </div>
+
+                        <!-- Ad Format (Platform Size) -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Ad Format</label>
+                            <select name="format" required id="formatSelect"
+                                onchange="updateFormatPreview()"
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                                {% for fmt in formats %}
+                                <option value="{{ fmt.id }}" class="bg-gray-900"
+                                    data-aspect="{{ fmt.aspect }}"
+                                    data-size="{{ fmt.width }}x{{ fmt.height }}"
+                                    {% if fmt.id == 'square' %}selected{% endif %}>
+                                    {{ fmt.name }} ({{ fmt.aspect }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div id="formatPreview" class="mt-2 flex items-center gap-2">
+                                <span class="text-xs text-white/30" id="formatInfo">1080 x 1080 px &mdash; Instagram</span>
+                                <div id="formatThumb" class="w-6 h-6 border border-white/20 rounded-sm"></div>
+                            </div>
+                        </div>
+
+                        <!-- Messaging Style -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Messaging Style</label>
+                            <select name="messaging" required
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                                {% for msg in messaging_styles %}
+                                <option value="{{ msg.id }}" class="bg-gray-900"
+                                    {% if msg.id == 'informative' %}selected{% endif %}>
+                                    {{ msg.name }} &mdash; {{ msg.description }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Ad Style -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Visual Style</label>
+                            <select name="style" required
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm text-white outline-none appearance-none cursor-pointer">
+                                {% for style in styles %}
+                                <option value="{{ style }}" class="bg-gray-900"
+                                    {% if style == 'professional' %}selected{% endif %}>{{ style | capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Product Feature -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Key Feature</label>
+                            <input type="text" name="feature" required placeholder="e.g. Ultra lightweight, 48MP camera"
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none">
+                        </div>
+
+                        <!-- Variant Selection -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Variant</label>
+                            <div class="space-y-2">
+                                {% for v in variants %}
+                                <label class="flex items-start gap-3 text-xs cursor-pointer group">
+                                    <input type="checkbox" name="variants" value="{{ v.name }}"
+                                        {% if loop.last %}checked{% endif %}
+                                        onchange="updateTotalImages()"
+                                        class="mt-0.5 accent-brand-500 cursor-pointer">
+                                    <div>
+                                        <span class="text-white/60 font-medium group-hover:text-white/80 transition">{{ v.name }}</span>
+                                        <span class="text-white/30 ml-1">— {{ v.description }}</span>
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Number of Images -->
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2">Images per Variant</label>
+                            <div class="flex items-center gap-3">
+                                <input type="range" name="num_images" min="1" max="5" value="1" id="numImagesRange"
+                                    oninput="document.getElementById('numImagesVal').textContent = this.value"
+                                    class="flex-1 accent-brand-500 h-1.5 cursor-pointer">
+                                <span id="numImagesVal" class="text-sm font-semibold text-white/70 w-4 text-center">1</span>
+                            </div>
+                            <p class="text-xs text-white/30 mt-1">Total images: <span id="totalImages">1</span> (<span id="variantCount">1</span> variants &times; <span id="perVariant">1</span>)</p>
+                        </div>
+
+                        <!-- Submit -->
+                        <button type="submit" id="submitBtn"
+                            class="btn-primary w-full rounded-xl px-6 py-3.5 text-sm font-semibold flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Generate Advertisements
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="lg:col-span-3">
+
+                <!-- Generation Panel (hidden by default, shown during/after generation) -->
+                <div id="generationPanel" class="hidden">
+
+                    <!-- Status/Progress -->
+                    <div id="statusPanel" class="hidden mb-8 fade-in">
+                        <div class="glass rounded-2xl p-6 generating">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="spinner"></div>
+                                    <span class="text-sm font-medium" id="statusText">Initializing...</span>
+                                </div>
+                                <span class="text-xs text-white/40" id="progressText">0 / 0</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div class="progress-fill h-full rounded-full transition-all duration-700" id="progressBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Grid -->
+                    <div id="resultsGrid" class="space-y-6"></div>
+
+                    <!-- Back to history link -->
+                    <div class="mt-6 text-center">
+                        <button onclick="showHistory()" class="text-xs text-white/30 hover:text-white/60 transition">Back to history</button>
+                    </div>
+                </div>
+
+                <!-- History Section (shown by default) -->
+                <div id="historySection">
+                    <h2 class="text-lg font-semibold mb-6">History</h2>
+                    <div id="historyGrid" class="space-y-8">
+                        <p class="text-sm text-white/30 text-center py-12">Loading...</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let pollInterval = null;
+
+        // --- Panel switching ---
+        function showGenerationPanel() {
+            document.getElementById('historySection').classList.add('hidden');
+            document.getElementById('generationPanel').classList.remove('hidden');
+        }
+
+        function showHistory() {
+            document.getElementById('generationPanel').classList.add('hidden');
+            document.getElementById('historySection').classList.remove('hidden');
+            loadHistory();
+        }
+
+        // --- Format preview ---
+        function updateFormatPreview() {
+            const opt = document.getElementById('formatSelect').selectedOptions[0];
+            const [w, h] = opt.dataset.size.split('x').map(Number);
+            document.getElementById('formatInfo').innerHTML = `${w} &times; ${h} px`;
+            const thumb = document.getElementById('formatThumb');
+            const maxPx = 28, ratio = w / h;
+            if (ratio >= 1) { thumb.style.width = maxPx+'px'; thumb.style.height = Math.round(maxPx/ratio)+'px'; }
+            else { thumb.style.height = maxPx+'px'; thumb.style.width = Math.round(maxPx*ratio)+'px'; }
+        }
+
+        function updateTotalImages() {
+            const n = parseInt(document.getElementById('numImagesRange').value);
+            const v = document.querySelectorAll('input[name="variants"]:checked').length;
+            document.getElementById('perVariant').textContent = n;
+            document.getElementById('totalImages').textContent = n * v;
+            document.getElementById('variantCount').textContent = v;
+        }
+
+        document.getElementById('numImagesRange').addEventListener('input', updateTotalImages);
+
+        // --- Generate ---
+        async function handleSubmit(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(e.target).entries());
+            const selectedVariants = [...document.querySelectorAll('input[name="variants"]:checked')].map(cb => cb.value);
+            if (!selectedVariants.length) { alert('Select at least one variant.'); return; }
+            data.variants = selectedVariants;
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> Generating...';
+
+            // Switch to generation panel
+            showGenerationPanel();
+            document.getElementById('statusPanel').classList.remove('hidden');
+            document.getElementById('resultsGrid').innerHTML = '';
+
+            try {
+                const res = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.error || 'Failed');
+                startPolling();
+            } catch (err) {
+                alert(err.message);
+                resetBtn();
+                showHistory();
+            }
+        }
+
+        function resetBtn() {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = false;
+            btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg> Generate Advertisements`;
+        }
+
+        function startPolling() {
+            pollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/status');
+                    const s = await res.json();
+                    updateStatus(s);
+                    if (!s.running) { clearInterval(pollInterval); onComplete(s); }
+                } catch (err) { console.error(err); }
+            }, 2000);
+        }
+
+        function updateStatus(s) {
+            document.getElementById('statusText').textContent = s.running ? `Generating: ${s.current_variant}...` : s.error ? `Error: ${s.error}` : 'Done!';
+            document.getElementById('progressText').textContent = `${s.progress} / ${s.total}`;
+            document.getElementById('progressBar').style.width = `${(s.progress / s.total) * 100}%`;
+
+            const existing = document.querySelectorAll('#resultsGrid .result-card').length;
+            for (let i = existing; i < s.results.length; i++) addResultCard(s.results[i], i + 1);
+        }
+
+        function onComplete(s) {
+            resetBtn();
+            setTimeout(() => {
+                document.getElementById('statusPanel').classList.add('hidden');
+            }, 2000);
+            if (s.error) alert('Error: ' + s.error);
+        }
+
+        function addResultCard(result, index) {
+            const grid = document.getElementById('resultsGrid');
+            const card = document.createElement('div');
+            card.className = 'result-card image-card glass-card rounded-2xl overflow-hidden fade-in';
+            const name = result.metadata?.variant_name || `Variant ${index}`;
+            const dims = result.metadata?.dimensions || '';
+
+            card.innerHTML = `
+                <div class="relative">
+                    <img src="/outputs/${result.png}" alt="${name}" class="w-full object-cover" loading="lazy">
+                    <div class="absolute top-3 left-3">
+                        <span class="variant-badge text-xs font-medium text-white/80 px-3 py-1 rounded-lg backdrop-blur-sm">${name}</span>
+                    </div>
+                    <div class="absolute top-3 right-3">
+                        <span class="text-xs text-white/60 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-md">${dims}</span>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-sm">${name}</h3>
+                        <span class="text-xs text-white/30">Seed: ${result.metadata?.seed || ''}</span>
+                    </div>
+                    <p class="text-xs text-white/40 leading-relaxed line-clamp-2 mb-4">${result.metadata?.prompt || ''}</p>
+                    <div class="flex gap-2">
+                        <a href="/outputs/${result.png}" download class="flex-1 text-center text-xs font-medium py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">PNG</a>
+                        <a href="/outputs/${result.jpg}" download class="flex-1 text-center text-xs font-medium py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">JPG</a>
+                        <a href="/outputs/${result.webp}" download class="flex-1 text-center text-xs font-medium py-2 rounded-lg bg-white/5 hover:bg-white/10 transition">WebP</a>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        }
+
+        // --- History ---
+        function formatDate(iso) {
+            if (!iso) return '';
+            const d = new Date(iso);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        async function loadHistory() {
+            const grid = document.getElementById('historyGrid');
+            grid.innerHTML = '<p class="text-sm text-white/30 text-center py-12">Loading...</p>';
+
+            try {
+                const res = await fetch('/api/gallery');
+                const runs = await res.json();
+
+                if (!runs.length) {
+                    grid.innerHTML = `
+                        <div class="text-center py-24">
+                            <div class="w-20 h-20 mx-auto mb-5 rounded-2xl bg-white/5 flex items-center justify-center">
+                                <svg class="w-10 h-10 text-white/15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-white/30">No ads generated yet</h3>
+                            <p class="text-sm text-white/20 mt-1">Fill in the form and hit generate to create your first ad</p>
+                        </div>`;
+                    return;
+                }
+
+                grid.innerHTML = '';
+                runs.forEach(run => {
+                    const el = document.createElement('div');
+                    el.className = 'glass-card rounded-2xl p-5 fade-in';
+
+                    const imgs = run.images.map(img => `
+                        <div class="glass rounded-xl overflow-hidden image-card">
+                            <img src="/outputs/${img.files.png}" alt="${img.variant_name}" class="w-full object-cover" loading="lazy">
+                            <div class="p-3">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-xs font-medium text-white/70">${img.variant_name}</span>
+                                    <span class="text-[10px] text-white/25">${img.dimensions || ''}</span>
+                                </div>
+                                <div class="flex gap-1.5 mt-2">
+                                    <a href="/outputs/${img.files.png}" download class="text-[10px] text-white/30 hover:text-white/60 border border-white/10 rounded px-1.5 py-0.5 transition">PNG</a>
+                                    <a href="/outputs/${img.files.jpg}" download class="text-[10px] text-white/30 hover:text-white/60 border border-white/10 rounded px-1.5 py-0.5 transition">JPG</a>
+                                    <a href="/outputs/${img.files.webp}" download class="text-[10px] text-white/30 hover:text-white/60 border border-white/10 rounded px-1.5 py-0.5 transition">WebP</a>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    el.innerHTML = `
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-sm font-semibold">${run.brand} — ${run.product}</h3>
+                                <p class="text-xs text-white/30 mt-0.5">${run.style} &middot; ${run.messaging} &middot; ${run.format}</p>
+                            </div>
+                            <span class="text-[11px] text-white/20">${formatDate(run.created_at)}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">${imgs}</div>
+                    `;
+                    grid.appendChild(el);
+                });
+            } catch (err) {
+                grid.innerHTML = '<p class="text-sm text-red-400">Failed to load history</p>';
+            }
+        }
+
+        // --- Init ---
+        updateFormatPreview();
+        loadHistory();
+    </script>
+
+</body>
+</html>
