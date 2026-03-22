@@ -183,13 +183,13 @@ def run_terminal():
     print("\n=== Advertisement Creator - Terminal Mode ===\n")
 
     # Brand
-    brand = input("Brand Name (e.g. Nike, Sony): ").strip()
+    brand = input("Brand Name (e.g. Sony, Kinley, Nike, Apple): ").strip()
     if not brand:
         print("Brand name is required.")
         return
 
     # Product
-    product = input("Product Name (e.g. Headphone, Running Shoes): ").strip()
+    product = input("Product Name (e.g. Headphone, Water Bottle, Running Shoes, iPhone 16): ").strip()
     if not product:
         print("Product name is required.")
         return
@@ -219,13 +219,13 @@ def run_terminal():
     style = AD_STYLES[style_idx]
 
     # Key Feature
-    feature = input("\nKey Feature (e.g. Ultra lightweight): ").strip()
+    feature = input("\nKey Feature (e.g. Good Looking, Ultra lightweight, 48MP camera): ").strip()
     if not feature:
         print("Key feature is required.")
         return
 
     # Custom Requirements
-    description = input("Custom Requirements (optional, press Enter to skip): ").strip()
+    description = input("Custom Requirements - optional (e.g. blue background, tropical setting, winter theme, target audience: young adults): ").strip()
 
     # Variants
     print("\nVariants:")
