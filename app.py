@@ -13,7 +13,7 @@ from datetime import datetime
 from prompts import build_prompts, AD_STYLES, AD_VARIANTS, AD_FORMATS, MESSAGING_STYLES, get_format_by_id
 from generator import generate_image, add_brand_text, save_image, OUTPUT_DIR
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=".")
 
 # Track generation status
 generation_status = {
