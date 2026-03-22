@@ -121,7 +121,23 @@ Each image is saved in three formats (PNG, JPG, WebP) with a unique timestamped 
 
 ## 5. Implementation Details
 
-### 5.1 Model Configuration
+### 5.1 User Input Fields
+
+The web interface provides the following input fields for advertisement generation:
+
+| # | Field | Type | Required | Default | Description |
+|---|-------|------|----------|---------|-------------|
+| 1 | **Brand Name** | Text input | Yes | — | The brand name to be displayed on the generated image (e.g., Sony, Nike, Apple). Overlaid as uppercase text on the final image. |
+| 2 | **Product Name** | Text input | Yes | — | The product being advertised (e.g., Headphone, Water Bottle, Running Shoes). Used in the prompt to describe what the ad is for. |
+| 3 | **Ad Format** | Dropdown | Yes | Social Media Post (1:1) | Determines the image dimensions and aspect ratio. Options: Social Media Post (1024x1024), Story/Reels/Portrait (768x1344), Banner/Landscape (1024x576). |
+| 4 | **Messaging Style** | Dropdown | Yes | Informative | Controls the tone and mood of the generated image. Options: Emotional, Informative, Call-to-Action, Inspirational, Humorous, Professional. Each appends a style-specific prompt suffix. |
+| 5 | **Visual Style** | Dropdown | Yes | Professional | Sets the overall aesthetic direction. Options: Luxury, Minimal, Energetic, Bold, Elegant, Playful, Professional, Vintage, Futuristic, Natural. |
+| 6 | **Key Feature** | Text input | Yes | — | The main selling point or feature to highlight in the ad (e.g., Ultra lightweight, 48MP camera). Embedded directly into the prompt. |
+| 7 | **Custom Requirements** | Textarea | No | — | Optional free-text field for additional instructions (e.g., "blue background, tropical setting, target audience: young adults"). Appended to the end of the generated prompt. |
+| 8 | **Variant** | Checkboxes | Yes (at least 1) | Creative Concept | Selects which ad variant templates to use. Options: Creative Concept (surreal/artistic), Studio Luxury (clean studio shot), Lifestyle (real-life scenario). Multiple can be selected. |
+| 9 | **Images per Variant** | Slider (1–5) | Yes | 1 | Number of images to generate per selected variant. Each image uses a different random seed. Total images = selected variants × images per variant. |
+
+### 5.2 Model Configuration
 
 The FLUX model is loaded using the Diffusers library's `FluxPipeline`:
 
@@ -145,7 +161,7 @@ pipeline.enable_model_cpu_offload()
 | Max Sequence Length | 512 | Maximum prompt token length |
 | Memory Management | `enable_model_cpu_offload()` | Moves unused layers to CPU to fit in available RAM |
 
-### 5.2 Supported Ad Formats
+### 5.3 Supported Ad Formats
 
 | Format | Aspect Ratio | Dimensions | Platform Use Cases |
 |--------|-------------|------------|-------------------|
@@ -155,7 +171,7 @@ pipeline.enable_model_cpu_offload()
 
 Dimensions are chosen as multiples of 64, optimized for the FLUX model's architecture (~1M total pixels).
 
-### 5.3 Messaging Styles
+### 5.4 Messaging Styles
 
 | Style | Prompt Effect |
 |-------|--------------|
@@ -166,7 +182,7 @@ Dimensions are chosen as multiples of 64, optimized for the FLUX model's archite
 | Humorous | Bright colors, whimsical elements, cheerful style |
 | Professional | Clean lines, muted palette, structured layout |
 
-### 5.4 Project Structure
+### 5.5 Project Structure
 
 ```
 flux_img_gen/
@@ -179,7 +195,7 @@ flux_img_gen/
 └── README.md
 ```
 
-### 5.5 Output File Structure
+### 5.6 Output File Structure
 
 ```
 outputs/
@@ -212,7 +228,7 @@ Each `_meta.json` contains the full generation parameters:
 }
 ```
 
-### 5.6 Dependencies
+### 5.7 Dependencies
 
 ```
 torch>=2.0.0
