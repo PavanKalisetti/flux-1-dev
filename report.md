@@ -125,17 +125,29 @@ Each image is saved in three formats (PNG, JPG, WebP) with a unique timestamped 
 
 The web interface provides the following input fields for advertisement generation:
 
-| # | Field | Type | Required | Default | Description |
-|---|-------|------|----------|---------|-------------|
-| 1 | **Brand Name** | Text input | Yes | — | The brand name to be displayed on the generated image (e.g., Sony, Nike, Apple). Overlaid as uppercase text on the final image. |
-| 2 | **Product Name** | Text input | Yes | — | The product being advertised (e.g., Headphone, Water Bottle, Running Shoes). Used in the prompt to describe what the ad is for. |
-| 3 | **Ad Format** | Dropdown | Yes | Social Media Post (1:1) | Determines the image dimensions and aspect ratio. Options: Social Media Post (1024x1024), Story/Reels/Portrait (768x1344), Banner/Landscape (1024x576). |
-| 4 | **Messaging Style** | Dropdown | Yes | Informative | Controls the tone and mood of the generated image. Options: Emotional, Informative, Call-to-Action, Inspirational, Humorous, Professional. Each appends a style-specific prompt suffix. |
-| 5 | **Visual Style** | Dropdown | Yes | Professional | Sets the overall aesthetic direction. Options: Luxury, Minimal, Energetic, Bold, Elegant, Playful, Professional, Vintage, Futuristic, Natural. |
-| 6 | **Key Feature** | Text input | Yes | — | The main selling point or feature to highlight in the ad (e.g., Ultra lightweight, 48MP camera). Embedded directly into the prompt. |
-| 7 | **Custom Requirements** | Textarea | No | — | Optional free-text field for additional instructions (e.g., "blue background, tropical setting, target audience: young adults"). Appended to the end of the generated prompt. |
-| 8 | **Variant** | Checkboxes | Yes (at least 1) | Creative Concept | Selects which ad variant templates to use. Options: Creative Concept (surreal/artistic), Studio Luxury (clean studio shot), Lifestyle (real-life scenario). Multiple can be selected. |
-| 9 | **Images per Variant** | Slider (1–5) | Yes | 1 | Number of images to generate per selected variant. Each image uses a different random seed. Total images = selected variants × images per variant. |
+- **Brand Name** (required) — The brand name to be displayed on the generated image (e.g., Sony, Nike, Apple). This is overlaid as uppercase text on the final image with a shadow effect for readability.
+
+- **Product Name** (required) — The product being advertised (e.g., Headphone, Water Bottle, Running Shoes, iPhone 16). Used directly in the prompt to describe what the ad is for.
+
+- **Ad Format** (required, default: Social Media Post) — Determines the image dimensions and aspect ratio. Three options are available:
+  - Social Media Post (1:1) — 1024 x 1024 px, for Instagram/Facebook/Twitter posts
+  - Story / Reels / Portrait (9:16) — 768 x 1344 px, for Instagram Stories, Reels, TikTok
+  - Banner / Landscape (16:9) — 1024 x 576 px, for YouTube thumbnails, website banners
+
+- **Messaging Style** (required, default: Informative) — Controls the tone and mood of the generated image. Each style appends a specific prompt suffix that influences the composition, color palette, and overall feel. Options: Emotional, Informative, Call-to-Action, Inspirational, Humorous, Professional.
+
+- **Visual Style** (required, default: Professional) — Sets the overall aesthetic direction for the ad. Options: Luxury, Minimal, Energetic, Bold, Elegant, Playful, Professional, Vintage, Futuristic, Natural.
+
+- **Key Feature** (required) — The main selling point or feature to highlight in the advertisement (e.g., Good Looking, Ultra lightweight, 48MP camera). This is embedded directly into the prompt to ensure the generated image emphasizes the feature.
+
+- **Custom Requirements** (optional) — A free-text field where users can provide additional instructions such as color preferences, mood, background setting, or target audience (e.g., "blue background, tropical setting, winter theme, target audience: young adults"). When provided, this text is appended to the end of the generated prompt for fine-grained control.
+
+- **Variant** (required, at least one must be selected, default: Creative Concept) — Checkboxes to select which ad variant templates to use. Users can select one or more:
+  - Creative Concept — Surreal, artistic, eye-catching ad composition with floating elements and dramatic lighting
+  - Studio Luxury — Clean studio product shot with professional softbox lighting, gradient background, and shallow depth of field
+  - Lifestyle — Product shown in a real-life usage scenario with natural lighting and candid photography
+
+- **Images per Variant** (required, default: 1) — A slider (range 1–5) controlling how many images to generate per selected variant. Each image uses a different random seed for variation. Total images generated = number of selected variants × images per variant.
 
 ### 5.2 Model Configuration
 
