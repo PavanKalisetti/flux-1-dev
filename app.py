@@ -51,6 +51,7 @@ def generate():
     feature = data.get("feature", "").strip()
     format_id = data.get("format", "instagram_post").strip()
     messaging_id = data.get("messaging", "informative").strip()
+    description = data.get("description", "").strip()
     num_images = min(int(data.get("num_images", 1)), 5)
     selected_variants = data.get("variants", [])
 
@@ -79,7 +80,7 @@ def generate():
     # Run generation in background thread
     thread = threading.Thread(
         target=_run_generation,
-        args=(brand, product, style, feature, format_id, messaging_id, ad_format, num_images, selected_variants),
+        args=(brand, product, style, feature, format_id, messaging_id, ad_format, num_images, selected_variants, description),
     )
     thread.daemon = True
     thread.start()
@@ -87,12 +88,12 @@ def generate():
     return jsonify({"message": "Generation started", "total": total})
 
 
-def _run_generation(brand, product, style, feature, format_id, messaging_id, ad_format, num_images, selected_variants):
+def _run_generation(brand, product, style, feature, format_id, messaging_id, ad_format, num_images, selected_variants, description):
     global generation_status
 
     try:
         run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        all_prompts = build_prompts(brand, product, style, feature, messaging_id)
+        all_prompts = build_prompts(brand, product, style, feature, messaging_id, description)
         prompts = [p for p in all_prompts if p["name"] in selected_variants]
         data = {
             "brand": brand, "product": product, "style": style,

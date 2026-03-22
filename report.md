@@ -58,7 +58,7 @@ This project presents an AI-powered advertisement image generator built as a web
 The system follows a five-stage pipeline:
 
 **Stage 1 — User Input Collection**
-The web interface collects six parameters: brand name, product name, ad format, visual style, messaging style, and key product feature. Users also select which ad variants to generate and the number of images per variant.
+The web interface collects seven parameters: brand name, product name, ad format, visual style, messaging style, key product feature, and an optional custom requirements field where users can provide additional context such as color preferences, mood, background setting, or target audience. Users also select which ad variants to generate and the number of images per variant.
 
 **Stage 2 — Prompt Construction**
 The prompt builder (`prompts.py`) combines user inputs with predefined variant templates. Each variant has a distinct prompt structure:
@@ -66,7 +66,7 @@ The prompt builder (`prompts.py`) combines user inputs with predefined variant t
 - *Lifestyle*: Emphasizes real-world usage with natural environments
 - *Creative Concept*: Uses surreal, artistic compositions with dramatic elements
 
-The selected messaging style appends a tone-specific suffix that modifies composition, color palette, and mood.
+The selected messaging style appends a tone-specific suffix that modifies composition, color palette, and mood. If the user provides custom requirements, these are appended to the end of the constructed prompt, allowing fine-grained control over the output.
 
 **Stage 3 — Image Generation**
 The FLUX.1-dev model generates images through an iterative denoising process:
@@ -105,8 +105,8 @@ Each image is saved in three formats (PNG, JPG, WebP) with a unique timestamped 
 - Provides real-time progress polling via status API
 - Aggregates history by grouping images by run ID
 
-**`templates/index.html` — Web Interface**
-- Input form with dropdowns, checkboxes, and slider controls
+**`index.html` — Web Interface**
+- Input form with dropdowns, checkboxes, slider controls, and optional custom requirements textarea
 - Real-time progress bar during generation
 - Result cards with image preview and download links
 - History panel showing all previous runs grouped chronologically

@@ -174,7 +174,7 @@ def get_messaging_by_id(messaging_id: str):
 
 
 def build_prompts(brand: str, product: str, style: str, feature: str,
-                  messaging_id: str = "informative"):
+                  messaging_id: str = "informative", description: str = ""):
     """
     Build prompts for all ad variants using user input.
 
@@ -192,6 +192,8 @@ def build_prompts(brand: str, product: str, style: str, feature: str,
             feature=feature,
             messaging=messaging_suffix,
         )
+        if description.strip():
+            prompt += " " + description.strip()
         results.append({
             "name": variant["name"],
             "description": variant["description"],
