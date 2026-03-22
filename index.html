@@ -242,7 +242,7 @@
                                 {% for v in variants %}
                                 <label class="flex items-start gap-3 text-xs cursor-pointer group">
                                     <input type="checkbox" name="variants" value="{{ v.name }}"
-                                        {% if loop.last %}checked{% endif %}
+                                        {% if loop.first %}checked{% endif %}
                                         onchange="updateTotalImages()"
                                         class="mt-0.5 accent-brand-500 cursor-pointer">
                                     <div>
