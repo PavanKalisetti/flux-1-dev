@@ -289,6 +289,6 @@ if __name__ == "__main__":
 
     if choice == "2":
         print("Starting web server on http://localhost:5012")
-        app.run(debug=True, port=5012)
+        app.run(debug=True, port=5012, use_reloader=False)
     else:
         run_terminal()
