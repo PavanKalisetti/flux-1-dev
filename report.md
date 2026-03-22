@@ -6,7 +6,7 @@
 
 ## Abstract
 
-This project presents an AI-powered advertisement image generator built as a web application. The system uses the FLUX.1-dev text-to-image diffusion model, loaded via the `FluxPipeline` from the Diffusers library, to automatically create professional advertisement visuals from user-provided product details. Users interact through a web interface where they specify brand name, product, visual style, messaging tone, ad format, and optional custom requirements. The system generates multiple ad variants — Creative Concept, Studio Luxury, and Lifestyle — each producing distinct visual compositions from the same input. Images are exported in PNG, JPG, and WebP formats suitable for social media platforms. The project demonstrates the practical application of open-source generative AI models in commercial creative workflows, reducing the time and cost of producing advertisement visuals while maintaining high visual quality. A Flask-based backend handles model inference and image processing, while the frontend provides real-time generation progress and a history of all previous runs.
+This project presents an AI-powered advertisement image generator that uses the FLUX.1-dev text-to-image diffusion model, loaded locally via the `FluxPipeline` from the Diffusers library, to automatically create professional advertisement visuals from user-provided product details. Users specify brand name, product, visual style, messaging tone, ad format, and optional custom requirements. The system generates multiple ad variants — Creative Concept, Studio Luxury, and Lifestyle — each producing distinct visual compositions from the same input. Images are exported in PNG, JPG, and WebP formats suitable for social media platforms. The application supports both a web-based UI and a terminal interface for flexibility. The project demonstrates the practical application of open-source, locally-run generative AI models in commercial creative workflows, reducing the time and cost of producing advertisement visuals while maintaining high visual quality.
 
 ---
 
@@ -15,21 +15,21 @@ This project presents an AI-powered advertisement image generator built as a web
 - The advertising industry relies heavily on high-quality visual content for product promotion across digital platforms such as Instagram, Facebook, YouTube, and LinkedIn. Traditionally, creating advertisement images requires professional photographers, graphic designers, and significant production budgets.
 - Recent advances in text-to-image diffusion models have made it possible to generate photorealistic images from natural language descriptions. Models like Stable Diffusion, DALL-E, and FLUX have demonstrated remarkable capabilities in producing high-fidelity visuals that closely follow textual prompts.
 - This project explores the application of the FLUX.1-dev model — recognized for its strong prompt adherence and high realism — to automate advertisement image generation. The model is loaded using `FluxPipeline` from the Diffusers library in bfloat16 precision with CPU offloading for memory efficiency. The motivation is to build an accessible tool that enables small businesses, marketers, and students to create professional-grade ad visuals without specialized design skills or expensive software.
-- The system is designed as a complete end-to-end pipeline: from user input collection through a web interface, to prompt engineering, AI image generation, brand text overlay, and multi-format export. A history feature allows users to review and compare all previous generations.
+- The system is designed as a complete end-to-end pipeline: from user input collection, to prompt engineering, AI image generation, brand text overlay, and multi-format export. The application provides both a web UI and a terminal interface for accessibility.
 
 ---
 
 ## 2. Problem Statement
 
 - Creating advertisement visuals is a time-consuming and resource-intensive process. Small businesses and individual marketers often lack the budget for professional photography and graphic design, leading to lower-quality promotional materials.
-- Existing AI image generation tools are often command-line based, require technical expertise to operate, and do not provide purpose-built workflows for advertisement creation. There is a gap between raw AI image generation capabilities and a user-friendly tool tailored specifically for ad creation.
+- Existing AI image generation tools often require technical expertise to operate and do not provide purpose-built workflows for advertisement creation. There is a gap between raw AI image generation capabilities and a user-friendly tool tailored specifically for ad creation.
 - This project addresses the need for an accessible, web-based advertisement generation tool that combines AI image generation with ad-specific features such as multiple visual variants, platform-specific formats, messaging styles, and brand text overlays — all controlled through a simple user interface.
 
 ---
 
 ## 3. Objectives
 
-- Develop a web-based application that generates professional advertisement images using the FLUX.1-dev text-to-image model loaded via `FluxPipeline` from the Diffusers library.
+- Develop an application that generates professional advertisement images using the FLUX.1-dev open-source text-to-image model, running locally via `FluxPipeline` from the Diffusers library.
 - Design a prompt engineering system with multiple ad variant templates (Creative Concept, Studio Luxury, Lifestyle) that produce visually distinct advertisements from the same product information.
 - Support multiple ad formats with appropriate aspect ratios for different social media platforms (1:1 for posts, 9:16 for stories/reels, 16:9 for banners).
 - Implement messaging style modifiers (Emotional, Informative, Call-to-Action, Inspirational, Humorous, Professional) that alter the tone and composition of generated images.
@@ -60,7 +60,7 @@ This project presents an AI-powered advertisement image generator built as a web
 The system follows a five-stage pipeline:
 
 **Stage 1 — User Input Collection**
-The web interface collects the following parameters: brand name, product name, ad format, visual style, messaging style, key product feature, and an optional custom requirements field where users can provide additional context such as color preferences, mood, background setting, or target audience. Users also select which ad variants to generate (Creative Concept, Studio Luxury, Lifestyle) and the number of images per variant (1–5).
+The application collects the following parameters from the user: brand name, product name, ad format, visual style, messaging style, key product feature, and an optional custom requirements field where users can provide additional context such as color preferences, mood, background setting, or target audience. Users also select which ad variants to generate (Creative Concept, Studio Luxury, Lifestyle) and the number of images per variant (1–5). Input can be provided via the web UI or the interactive terminal interface.
 
 **Stage 2 — Prompt Construction**
 The prompt builder (`prompts.py`) combines user inputs with predefined variant templates. Each variant has a distinct prompt structure:
@@ -105,11 +105,11 @@ Each image is saved in three formats (PNG, JPG, WebP) with a unique timestamped 
 - Applies brand text overlay with automatic font scaling using Pillow
 - Saves images in PNG, JPG, and WebP formats with JSON metadata
 
-**`main.py` — Web Server and API**
-- Serves the web UI via Flask with `template_folder="."` (index.html in project root)
-- Handles generation requests in background threads for non-blocking operation
-- Provides real-time progress polling via `/api/status` endpoint
-- Aggregates history by grouping images by run ID via `/api/gallery` endpoint
+**`main.py` — Application Entry Point**
+- Provides mode selection on startup (Web UI or Terminal)
+- Web UI mode: starts Flask server with REST API endpoints for generation, progress polling, and history
+- Terminal mode: interactive command-line flow with numbered menus and text prompts
+- Handles generation orchestration in both modes
 
 **`index.html` — Web Interface**
 - Input form with text fields, dropdowns, checkboxes, slider, and optional custom requirements textarea
@@ -123,7 +123,7 @@ Each image is saved in three formats (PNG, JPG, WebP) with a unique timestamped 
 
 ### 5.1 User Input Fields
 
-The web interface provides the following input fields for advertisement generation:
+Both the Web UI and Terminal mode collect the same input fields for advertisement generation:
 
 - **Brand Name** (required) — The brand name to be displayed on the generated image (e.g., Sony, Nike, Apple). This is overlaid as uppercase text on the final image with a shadow effect for readability.
 
@@ -290,11 +290,11 @@ flask>=3.0.0
 
 ### 7.1 Summary of Contributions
 
-- Built a complete, end-to-end web application for AI-powered advertisement generation using the FLUX.1-dev model loaded via `FluxPipeline` from the Diffusers library.
+- Built a complete, end-to-end application for AI-powered advertisement generation using the FLUX.1-dev model running locally via `FluxPipeline` from the Diffusers library.
 - Designed a prompt engineering system with three distinct ad variant templates (Creative Concept, Studio Luxury, Lifestyle) and six messaging styles that produce diverse, high-quality advertisement visuals from minimal user input.
 - Implemented platform-aware ad formats (1:1, 9:16, 16:9) that generate images at FLUX-optimized dimensions for social media deployment.
 - Added optional custom requirements input for fine-grained user control over generated imagery.
-- Created a user-friendly web interface with real-time generation progress, multi-format downloads (PNG, JPG, WebP), and a history view of all previous runs grouped by session.
+- Created a user-friendly interface (web UI and terminal) with real-time generation progress, multi-format downloads (PNG, JPG, WebP), and a history view of all previous runs grouped by session.
 - Demonstrated that modern open-source text-to-image models can be practically applied to commercial creative workflows, significantly reducing the time and cost of advertisement production.
 
 ### 7.2 Possible Extensions and Improvements

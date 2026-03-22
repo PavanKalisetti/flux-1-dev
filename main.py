@@ -176,6 +176,119 @@ def gallery():
     return jsonify(result)
 
 
+def run_terminal():
+    """Run ad generation via terminal prompts."""
+    from prompts import AD_FORMATS, MESSAGING_STYLES, AD_STYLES, AD_VARIANTS
+
+    print("\n=== Advertisement Creator - Terminal Mode ===\n")
+
+    # Brand
+    brand = input("Brand Name (e.g. Nike, Sony): ").strip()
+    if not brand:
+        print("Brand name is required.")
+        return
+
+    # Product
+    product = input("Product Name (e.g. Headphone, Running Shoes): ").strip()
+    if not product:
+        print("Product name is required.")
+        return
+
+    # Ad Format
+    print("\nAd Formats:")
+    for i, fmt in enumerate(AD_FORMATS, 1):
+        print(f"  {i}. {fmt['name']} ({fmt['aspect']}) — {fmt['width']}x{fmt['height']}")
+    fmt_choice = input(f"Choose format [1-{len(AD_FORMATS)}] (default: 1): ").strip()
+    fmt_idx = int(fmt_choice) - 1 if fmt_choice.isdigit() and 1 <= int(fmt_choice) <= len(AD_FORMATS) else 0
+    ad_format = AD_FORMATS[fmt_idx]
+
+    # Messaging Style
+    print("\nMessaging Styles:")
+    for i, msg in enumerate(MESSAGING_STYLES, 1):
+        print(f"  {i}. {msg['name']} — {msg['description']}")
+    msg_choice = input(f"Choose messaging [1-{len(MESSAGING_STYLES)}] (default: 2 Informative): ").strip()
+    msg_idx = int(msg_choice) - 1 if msg_choice.isdigit() and 1 <= int(msg_choice) <= len(MESSAGING_STYLES) else 1
+    messaging_id = MESSAGING_STYLES[msg_idx]["id"]
+
+    # Visual Style
+    print("\nVisual Styles:")
+    for i, s in enumerate(AD_STYLES, 1):
+        print(f"  {i}. {s.capitalize()}")
+    style_choice = input(f"Choose style [1-{len(AD_STYLES)}] (default: 7 Professional): ").strip()
+    style_idx = int(style_choice) - 1 if style_choice.isdigit() and 1 <= int(style_choice) <= len(AD_STYLES) else 6
+    style = AD_STYLES[style_idx]
+
+    # Key Feature
+    feature = input("\nKey Feature (e.g. Ultra lightweight): ").strip()
+    if not feature:
+        print("Key feature is required.")
+        return
+
+    # Custom Requirements
+    description = input("Custom Requirements (optional, press Enter to skip): ").strip()
+
+    # Variants
+    print("\nVariants:")
+    for i, v in enumerate(AD_VARIANTS, 1):
+        print(f"  {i}. {v['name']} — {v['description']}")
+    var_input = input(f"Select variants (comma-separated, e.g. 1,2,3) (default: 1): ").strip()
+    if var_input:
+        var_indices = [int(x.strip()) - 1 for x in var_input.split(",") if x.strip().isdigit()]
+        selected_variants = [AD_VARIANTS[i]["name"] for i in var_indices if 0 <= i < len(AD_VARIANTS)]
+    else:
+        selected_variants = [AD_VARIANTS[0]["name"]]
+
+    if not selected_variants:
+        print("At least one variant must be selected.")
+        return
+
+    # Images per variant
+    num_input = input("Images per variant [1-5] (default: 1): ").strip()
+    num_images = int(num_input) if num_input.isdigit() and 1 <= int(num_input) <= 5 else 1
+
+    total = len(selected_variants) * num_images
+    print(f"\n--- Generating {total} image(s) ---")
+    print(f"Brand: {brand} | Product: {product} | Style: {style}")
+    print(f"Format: {ad_format['name']} | Messaging: {messaging_id} | Feature: {feature}")
+    if description:
+        print(f"Custom: {description}")
+    print(f"Variants: {', '.join(selected_variants)} | Images per variant: {num_images}")
+    print()
+
+    # Generate
+    from datetime import datetime as dt
+    run_id = dt.now().strftime("%Y%m%d_%H%M%S")
+    all_prompts = build_prompts(brand, product, style, feature, messaging_id, description)
+    prompts = [p for p in all_prompts if p["name"] in selected_variants]
+    data = {"brand": brand, "product": product, "style": style, "feature": feature, "format": ad_format["id"], "messaging": messaging_id}
+
+    count = 0
+    for i, variant in enumerate(prompts, start=1):
+        for img_num in range(1, num_images + 1):
+            count += 1
+            label = f"{variant['name']} #{img_num}" if num_images > 1 else variant["name"]
+            print(f"[{count}/{total}] Generating: {label}...")
+
+            image, seed = generate_image(variant["prompt"], width=ad_format["width"], height=ad_format["height"])
+            image = add_brand_text(image, brand)
+
+            variant_label = f"{i}_{img_num}" if num_images > 1 else str(i)
+            result = save_image(image, brand, variant["prompt"], seed, label, variant_label, data, run_id)
+            print(f"  Saved: {result['png']}, {result['jpg']}, {result['webp']}")
+
+    print(f"\nDone! {total} image(s) saved to outputs/")
+
+
 if __name__ == "__main__":
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    app.run(debug=True, port=5012)
+
+    print("Advertisement Creator")
+    print("  1. Terminal")
+    print("  2. Web UI")
+    choice = input("Choose mode [1/2] (default: 1): ").strip()
+
+    if choice == "2":
+        print("Starting web server on http://localhost:5012")
+        app.run(debug=True, port=5012)
+    else:
+        run_terminal()
