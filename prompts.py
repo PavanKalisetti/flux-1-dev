@@ -105,6 +105,16 @@ MESSAGING_STYLES = [
 
 AD_VARIANTS = [
     {
+        "name": "Creative Concept",
+        "description": "Surreal, artistic, eye-catching ad composition",
+        "template": (
+            "Creative advertisement of {product} by {brand}, surreal and eye-catching composition. "
+            "{style} artistic style. Feature emphasized: {feature}. "
+            "Floating elements, dramatic lighting, bold colors, high-end campaign look. "
+            "{messaging}"
+        ),
+    },
+    {
         "name": "Studio Luxury",
         "description": "Clean studio product shot with professional lighting",
         "template": (
@@ -122,16 +132,6 @@ AD_VARIANTS = [
             "Lifestyle advertisement of {product} by {brand} being used in real life. "
             "{style} aesthetic. Highlight: {feature}. "
             "Natural lighting, human interaction, realistic environment, candid photography. "
-            "{messaging}"
-        ),
-    },
-    {
-        "name": "Creative Concept",
-        "description": "Surreal, artistic, eye-catching ad composition",
-        "template": (
-            "Creative advertisement of {product} by {brand}, surreal and eye-catching composition. "
-            "{style} artistic style. Feature emphasized: {feature}. "
-            "Floating elements, dramatic lighting, bold colors, high-end campaign look. "
             "{messaging}"
         ),
     },
